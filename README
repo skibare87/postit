@@ -6,9 +6,26 @@ If a file already exists, the UI will ask for confirmation before overwriting.
 
 PostIt! uses a gunicorn image to host its Flask app. To run this, make sure to build the flaskhost image first or modify the dockerfile for postit to use another WSGI image and map app/app.py to the correct location. After that is available, build postit:latest and map the files folder wherever you want. 
 
-Thats it!
+To Build
 1. Build flaskhost 
 2. Build postit
 3. launch postit at http://<ip>:<port>
+
+To use
+1. Either select upload for a file or paste your text file content into the editor. It will expand based on the number of lines.
+2. Add a filename if you are not uploading a file. .txt will be appended if not provided.
+3. Click the Save button
+
+To Edit
+1. Right click a file
+2. Choose load (only for txt files)
+3. Edit your file then hit save. You will be prompted to overwrite
+
+To Delete
+1. Right click a file
+2. Choose Delete
+
+To Download
+1. Left click file
 
 NOTE: It is recommended to host this behind a reverse proxy with https support. Also, adding authentication is important if this is publically available. There are no restrictions on file size or content, so use at your own risk. 
