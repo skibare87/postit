@@ -1,0 +1,9 @@
+BUILD
+______________________
+> ./build
+
+
+RUN
+______________________
+1. Add your app.py flask file to app folder
+> docker run -v ./app:/app -v ./files:/files -p 8080:80 skibare87/flaskhost:latest

@@ -1,0 +1,2 @@
+#!/bin/bash
+docker build -t skibare87/postit:latest .

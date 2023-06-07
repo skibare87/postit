@@ -1,0 +1,11 @@
+version: '3'
+services:
+  postit:
+    image: docker.pruitt.cloud/postit:latest
+    ports:
+      - "4044:80"
+    volumes:
+      - ./app:/app
+      - ./files:/files
+    restart: always
+

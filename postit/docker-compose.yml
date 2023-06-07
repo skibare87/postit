@@ -1,0 +1,10 @@
+version: '3'
+services:
+  postit:
+    image: skibare87/postit:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./files:/files
+    restart: always
+
