@@ -1,0 +1,191 @@
+<!doctype html>
+        <html>
+            <head>
+                <title>Post It!</title>
+                <!-- CodeMirror Resources -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+                <!-- Specify the desired syntax mode here -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+
+                <style>
+                    .CodeMirror { height: auto; border: 1px solid #ddd; }
+                    .context-menu {
+                        display: none;
+                        position: absolute;
+                        z-index: 10000;
+                        padding: 5px;
+                        background: #fff;
+                        border: 1px solid #ccc;
+                    }
+                    .context-menu-item {
+                        cursor: pointer;
+                        padding: 5px 10px;
+                    }
+                    .context-menu-item:hover {
+                        background: #ddd;
+                    }
+                    .file-item {
+                        display: inline-block;
+                        text-align: center;
+                        margin: 10px;
+                    }
+                    .file-item img {
+                        width: 100px;
+                        height: 100px;
+                    }
+                    .file-item span {
+                        display: block;
+                    }
+		    .content {
+            		width: 80%;
+            		margin: auto;
+            		background-color: white;
+            		padding: 20px;
+            		box-sizing: border-box;
+        		}
+                    body {
+                        background-color: skyblue;
+                    }
+                </style>
+            </head>
+            <body>
+            <div class="content">
+                <h2>Post It! Paste Manager</h2>
+                <hr />
+                <form id="submitForm" method="POST">
+                    <input type="text" id="filename" name="filename" maxlength="60" placeholder="Filename">
+                    <input type="file" id="fileUpload" accept="*/*"><br>
+                    <textarea id="editor" name="text"></textarea>
+                    <button type="submit">Save</button>
+                    <button type="button" id="clear">Clear</button>
+                </form>
+
+                <div id="contextMenu" class="context-menu">
+                    <div id="loadFile" class="context-menu-item">Load</div>
+                    <div id="deleteFile" class="context-menu-item">Delete</div>
+                </div>
+                <hr />
+                <h2>Files</h2>
+                <p>Right Click to load or delete a file. Left click will download the file.</p>
+                <div id="fileList"> 
+                    {% set image_extensions = ['.png', '.jpg', '.jpeg', '.gif'] %}
+                    {% set txt_extensions = ['.txt', '.py', '.ps1', '.sh'] %}
+                    {% for file in files %}
+                    <div class="file-item">
+                        {% set extension = '.' + file.split('.')[-1] %}
+                        {% if extension in image_extensions %}
+                            <img src="{{ url_for('uploads', filename=file) }}" alt="Image Thumbnail" style="width: 100px; height: 100px;">
+                        {% elif extension in txt_extensions %}
+                            <img src="{{ url_for('img', filename="file.png") }}" alt="Text Icon" style="width: 100px; height: 100px;">
+                        {% else %}
+                            <img src="{{ url_for('img', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
+                        {% endif %}
+                        <span class="file-name">{{ file }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <script>
+                    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+                        lineNumbers: true,
+                        mode: "python"  // change this to the mode you want
+                    });
+
+		    $("#submitForm").on("submit", function(e) {
+    e.preventDefault();
+    var filename = $("#filename").val();
+    var fileUpload = $("#fileUpload").get(0).files[0];
+    var data = new FormData();
+    data.append('filename', filename);
+    if (fileUpload) {
+        data.append('file', fileUpload);
+    } else {
+        data.append('text', editor.getValue());
+    }
+    $.ajax({
+        url: '/',
+        type: 'POST',
+        processData: false,  // required for file uploading
+        contentType: false,  // required for file uploading
+        data: data,
+        success: function() {
+            location.reload();
+        },
+        error: function(xhr) {
+            if (xhr.status == 409) {
+                if (confirm(xhr.responseJSON.error + ' Do you want to overwrite it?')) {
+                    $.ajax({
+                        url: '/',
+                        type: 'POST',
+                        processData: false,
+                        contentType: false,
+                        data: data,
+                        success: function() {
+                            location.reload();
+                        }
+                    });
+                }
+            }
+        }
+    });
+});
+
+                    $("#clear").on("click", function() {
+                        $("#filename").val('');
+                        editor.setValue('');
+                    });
+
+                    var currentFile;
+                    $(".file-item").on("contextmenu", function(e) {
+                        e.preventDefault();
+                        currentFile = $(this).find(".file-name").text();
+                        $("#contextMenu").css({
+                            display: "block",
+                            left: e.pageX,
+                            top: e.pageY
+                        });
+                    });
+
+                    $("#loadFile").on("click", function() {
+                        $.ajax({
+                            url: '/load',
+                            type: 'POST',
+                            data: { filename: currentFile },
+                            success: function(data) {
+                                $("#filename").val(currentFile);
+                                editor.setValue(data);
+                                $("#contextMenu").hide();
+                            }
+                        });
+                    });
+
+                    $("#deleteFile").on("click", function() {
+                        $.ajax({
+                            url: '/delete',
+                            type: 'POST',
+                            data: { filename: currentFile },
+                            success: function() {
+                                location.reload();
+                            }
+                        });
+                    });
+
+                    // Hide the context menu when clicking outside it
+                    $(document).on("click", function(e) {
+                        if ($(e.target).closest("#contextMenu").length === 0) {
+                            $("#contextMenu").hide();
+                        }
+                    });
+
+                    // Download file on left click
+                    $(".file-item").on("click", function() {
+                        var filename = $(this).find(".file-name").text();
+                        window.location.href = "/download/" + filename;
+                    });
+                </script>
+            </div>
+            </body>
+        </html>
