@@ -1,9 +1,13 @@
 BUILD
 ______________________
+1. Make sure skibare87/flaskhost:latest is available by building first or modify to reference the correct image
+
 > ./build
 
 
 RUN
 ______________________
-1. Add your app.py flask file to app folder
-> docker run -v ./app:/app -v ./files:/files -p 8080:80 skibare87/flaskhost:latest
+1. The app folder is already included in this image, no need to add it
+2. Modify your files volume to store files where you want
+
+> docker run -v ./files:/files -p 8080:80 skibare87/flaskhost:latest

@@ -1,1 +1,14 @@
-Build flaskhost first then build postit
+PostIt! is a simple paste manager that allows for text to be pasted in and saved to the filename selected. It also supports arbitrary file upload with the upload file button. 
+
+The editor supports syntax highlighting. All saved files appear at the bottom. Clicking on the file will download it. Right clicking will present a menu that will allow you to load the file back into the editor or delete the file from the server. 
+
+If a file already exists, the UI will ask for confirmation before overwriting. 
+
+PostIt! uses a gunicorn image to host its Flask app. To run this, make sure to build the flaskhost image first or modify the dockerfile for postit to use another WSGI image and map app/app.py to the correct location. After that is available, build postit:latest and map the files folder wherever you want. 
+
+Thats it!
+1. Build flaskhost 
+2. Build postit
+3. launch postit at http://<ip>:<port>
+
+NOTE: It is recommended to host this behind a reverse proxy with https support. Also, adding authentication is important if this is publically available. There are no restrictions on file size or content, so use at your own risk. 

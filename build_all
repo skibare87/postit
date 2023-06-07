@@ -1,0 +1,5 @@
+#!/bin/bash
+cd flaskhost
+./build
+cd ../postit
+./build
