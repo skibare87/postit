@@ -71,8 +71,10 @@
                 <h2>Files</h2>
                 <p>Right Click to load or delete a file. Left click will download the file.</p>
                 <div id="fileList"> 
-                    {% set image_extensions = ['.png', '.jpg', '.jpeg', '.gif'] %}
+                    {% set image_extensions = ['.png', '.jpg', '.jpeg', '.gif','.webp'] %}
                     {% set txt_extensions = ['.txt', '.py', '.ps1', '.sh'] %}
+                    {% set audio_extensions = ['.mp3', '.ogg'] %}
+                    {% set video_extensions = ['.mp4', '.webm'] %}
                     {% for file in files %}
                     <div class="file-item">
                         {% set extension = '.' + file.split('.')[-1] %}
@@ -80,7 +82,17 @@
                             <img src="{{ url_for('uploads', filename=file) }}" alt="Image Thumbnail" style="width: 100px; height: 100px;">
                         {% elif extension in txt_extensions %}
                             <img src="{{ url_for('img', filename="file.png") }}" alt="Text Icon" style="width: 100px; height: 100px;">
-                        {% else %}
+                        {% elif extension in audio_extensions %}
+            			<audio controls style="width:100px; height:100px;">
+                		<source src="{{ url_for('uploads', filename=file) }}" type="audio/{{ file.rsplit('.', 1)[1].lower() }}">
+                            	<img src="{{ url_for('img', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
+            			</audio>
+        		{% elif file.endswith('.mp4') or file.endswith('.webm') %}
+            			<video controls style="width:100px; height:100px;">
+                		<source src="{{ url_for('uploads', filename=file) }}" type="video/{{ file.rsplit('.', 1)[1].lower() }}">
+                            	<img src="{{ url_for('img', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
+            			</video>
+			{% else %}
                             <img src="{{ url_for('img', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
                         {% endif %}
                         <span class="file-name">{{ file }}</span>
