@@ -10,7 +10,6 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', '.ps1', '.py','
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-        filename = request.form['filename']
         if 'file' in request.files:
             file = request.files['file']
             filename = secure_filename(file.filename)
@@ -19,6 +18,7 @@ def home():
                 return jsonify(error=f'File {filename} already exists'), 409
             file.save(full_path)
         else:
+            filename = request.form['filename']
             text = request.form['text']
             if os.path.splitext(filename)[1] not in txt_extensions:
                 filename += '.txt'
