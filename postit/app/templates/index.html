@@ -1,81 +1,112 @@
-<!doctype html>
-        <html>
-            <head>
-                <title>Post It!</title>
-                <!-- CodeMirror Resources -->
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-                <!-- Specify the desired syntax mode here -->
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-            </head>
-            <body>
-            <div class="content">
-                <div class="logo-container">
-    <img src="{{ url_for('static', filename="logo.png") }}" alt="Paste It Logo">
-</div>
-		<hr />
-                <form id="submitForm" method="POST">
-                    <input type="text" id="filename" name="filename" maxlength="60" placeholder="Filename">
-                    <input type="file" id="fileUpload" accept="*/*"><br>
-                    <textarea id="editor" name="text"></textarea>
-                    <button type="submit">Save</button>
-                    <button type="button" id="clear">Clear</button>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Post It!</title>
+        <!-- CodeMirror Resources -->
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <!-- Specify the desired syntax mode here -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+        <link rel="stylesheet"
+              type="text/css"
+              href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <div class="content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename="logo.png") }}"
+                     alt="Paste It Logo">
+            </div>
+            <hr />
+            <form id="submitForm" method="POST">
+                <input type="text"
+                       id="filename"
+                       name="filename"
+                       maxlength="60"
+                       placeholder="Filename">
+                <input type="file" id="fileUpload" accept="*/*">
+                <br>
+                <textarea id="editor" name="text"></textarea>
+                <button type="submit">Save</button>
+                <button type="button" id="clear">Clear</button>
+            </form>
+            <br>
+            <br>
+            <button type="button" class="collapsible">GPT 4</button>
+            <div class="collapsible-content">
+                <form id="chat-form">
+                    <label for="system">System Role:</label>
+                    <br>
+                    <input type="text"
+                           id="system"
+                           name="system"
+                           value="You are a helpful assistant.">
+                    <br>
+                    <label for="prompt">Prompt:</label>
+                    <br>
+                    <textarea id="prompt" name="prompt" rows="4" cols="50"></textarea>
+                    <br>
+                    <input type="submit" value="Submit">
                 </form>
-		<br>
-		<br>
-    			<button type="button" class="collapsible">GPT 4</button>
-    			<div class="collapsible-content">
-        			<form id="chat-form">
-            				<label for="system">System Role:</label><br>
-    					<input type="text" id="system" name="system" value="You are a helpful assistant."><br>
-					<label for="prompt">Prompt:</label><br>
-    					<textarea id="prompt" name="prompt" rows="4" cols="50"></textarea><br>
-            				<input type="submit" value="Submit">
-        			</form>
-    			</div>
-
-                <div id="contextMenu" class="context-menu">
-                    <div id="loadFile" class="context-menu-item">Load</div>
-                    <div id="deleteFile" class="context-menu-item">Delete</div>
-                </div>
-		<hr >
-		<div id="drop_zone">Drop files here</div>
-                <hr />
-                <h2>Files</h2>
-                <p>Right Click to load or delete a file. Left click will download the file.</p>
-                <div id="fileList"> 
-                    {% set image_extensions = ['.png', '.jpg', '.jpeg', '.gif','.webp'] %}
-                    {% set txt_extensions = ['.txt', '.py', '.ps1', '.sh'] %}
-                    {% set audio_extensions = ['.mp3', '.ogg'] %}
-                    {% set video_extensions = ['.mp4', '.webm'] %}
-                    {% for file in files %}
+            </div>
+            <div id="contextMenu" class="context-menu">
+                <div id="loadFile" class="context-menu-item">Load</div>
+                <div id="deleteFile" class="context-menu-item">Delete</div>
+            </div>
+            <hr>
+            <div id="drop_zone">Drop files here</div>
+            <hr />
+            <h2>Files</h2>
+            <p>Right Click to load or delete a file. Left click will download the file.</p>
+            <div id="fileList">
+                {% set image_extensions = [".png", ".jpg", ".jpeg", ".gif", ".webp"] %}
+                {% set txt_extensions = [".txt", ".py", ".ps1", ".sh"] %}
+                {% set audio_extensions = [".mp3", ".ogg"] %}
+                {% set video_extensions = [".mp4", ".webm"] %}
+                {% for file in files %}
                     <div class="file-item">
                         {% set extension = '.' + file.split('.')[-1] %}
                         {% if extension in image_extensions %}
-                            <img src="{{ url_for('uploads', filename=file) }}" alt="Image Thumbnail" style="width: 100px; height: 100px;">
+                            <img src="{{ url_for('uploads', filename=file) }}"
+                                 alt="Image Thumbnail"
+                                 style="width: 100px;
+                                        height: 100px">
                         {% elif extension in txt_extensions %}
-                            <img src="{{ url_for('static', filename="file.png") }}" alt="Text Icon" style="width: 100px; height: 100px;">
+                            <img src="{{ url_for('static', filename="file.png") }}"
+                                 alt="Text Icon"
+                                 style="width: 100px;
+                                        height: 100px">
                         {% elif extension in audio_extensions %}
-            			<audio controls style="width:100px; height:100px;">
-                		<source src="{{ url_for('uploads', filename=file) }}" type="audio/{{ file.rsplit('.', 1)[1].lower() }}">
-                            	<img src="{{ url_for('static', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
-            			</audio>
-        		{% elif extension in video_extensions %}
-            			<video controls style="width:100px; height:100px;">
-                		<source src="{{ url_for('uploads', filename=file) }}" type="video/{{ file.rsplit('.', 1)[1].lower() }}">
-                            	<img src="{{ url_for('static', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
-            			</video>
-			{% else %}
-                            <img src="{{ url_for('static', filename="genfile.png") }}" alt="File Icon" style="width: 100px; height: 100px;">
+                            <audio controls style="width:100px; height:100px;">
+                                <source src="{{ url_for('uploads', filename=file) }}"
+                                        type="audio/{{ file.rsplit('.', 1) [1].lower() }}">
+                                <img src="{{ url_for('static', filename="genfile.png") }}"
+                                     alt="File Icon"
+                                     style="width: 100px;
+                                            height: 100px">
+                            </audio>
+                        {% elif extension in video_extensions %}
+                            <video controls style="width:100px; height:100px;">
+                                <source src="{{ url_for('uploads', filename=file) }}"
+                                        type="video/{{ file.rsplit('.', 1) [1].lower() }}">
+                                <img src="{{ url_for('static', filename="genfile.png") }}"
+                                     alt="File Icon"
+                                     style="width: 100px;
+                                            height: 100px">
+                            </video>
+                        {% else %}
+                            <img src="{{ url_for('static', filename="genfile.png") }}"
+                                 alt="File Icon"
+                                 style="width: 100px;
+                                        height: 100px">
                         {% endif %}
                         <span class="file-name">{{ file }}</span>
                     </div>
-                    {% endfor %}
-                </div>
-		<script src="{{ url_for('static', filename='filemanager.js') }}"></script>
+                {% endfor %}
             </div>
-	    </body>
-        </html>
+            <script src="{{ url_for('static', filename='filemanager.js') }}"></script>
+        </div>
+    </body>
+</html>
