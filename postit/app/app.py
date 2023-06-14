@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
+import openai
 import os
 import glob
 
@@ -7,6 +8,7 @@ app = Flask(__name__)
 FILES_DIRECTORY = '/files/'
 txt_extensions = ['.txt', '.ps1', '.py','.sh']
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', '.ps1', '.py','.sh'}
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
@@ -72,7 +74,49 @@ def load_file():
             content = f.read()
         return content
     return '', 404
+@app.route('/chat', methods=['POST'])
+def chat():
+    prompt = request.json.get('prompt')
+    system=request.json.get('system')
+    context=request.json.get('context')
+    model="gpt-4"
+    if context:
+        context="You, referred to by text that starts AI:, and a human, referred to by test that starts with Human:, previously had this conversation: \n"+context+"\nYou do not need to prepend AI or Human to any answer, instead just answer the prompt directly.\n\n"
+        prompt=context+prompt
+    return jsonify(chat_generate_text(prompt, model=model, system_prompt=system, max_tokens=4000))
+def chat_generate_text(
+    prompt,
+    model = "gpt-3.5-turbo",
+    system_prompt= "You are a helpful assistant.",
+    temperature=0.9,
+    max_tokens= 256,
+    n= 1,
+    stop = None,
+    presence_penalty = 0,
+    frequency_penalty = 0.1
+    ):
 
+    messages = [
+        {"role": "system", "content": f"{system_prompt}"},
+        {"role": "user", "content": prompt},
+    ]
+    openai.api_key=os.environ.get("OPENAI_API_KEY")
+
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        n=n,
+        stop=stop,
+        presence_penalty=presence_penalty,
+        frequency_penalty=frequency_penalty,
+    )
+
+    generated_texts = [
+        choice.message["content"].strip() for choice in response["choices"]
+    ]
+    return generated_texts[0]
 if __name__ == '__main__':
     app.run()
 

@@ -1,8 +1,43 @@
 $(document).ready(function() {
     var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
         lineNumbers: true,
-        mode: "python" // change this to the mode you want
+        lineWrapping: true,
+	mode: "python" // change this to the mode you want
     });
+    $('#chat-form').on('submit', function(event) {
+    event.preventDefault();
+    var promptext = $('#prompt').val();
+    var system = $('#system').val();
+    var doc = editor.getDoc();
+    var context=doc.getValue();
+    var data = {
+       'system': system,
+       'prompt': promptext,
+       'context':context
+    };
+if(promptext.trim() == "") {
+    alert("Prompt cannot be empty");
+} else {
+   var doc = editor.getDoc();
+   var lastLine=doc.lineCount();
+   $.ajax({
+        url: '/chat',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+
+        success: function(response) {
+             console.log(response);
+             var doc = editor.getDoc();
+             var lastLine=doc.lineCount()-1;
+	     doc.replaceRange( "AI: "+response, {line: lastLine, ch: 0}, {line: lastLine, ch: editor.getLine(lastLine).length});
+        }
+    });
+    
+   doc.replaceRange("\n\nHuman: "+promptext+"\nThinking...",  {line: lastLine, ch: 0}, {line: lastLine, ch: 0});
+}
+});
+
 
 	var dropZone = document.getElementById('drop_zone');
 dropZone.addEventListener('dragenter', function() {
@@ -172,3 +207,13 @@ function uploadFile(file) {
     
 
 });
+$('.collapsible').on('click', function() {
+    this.classList.toggle('active');
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+        content.style.display = "none";
+    } else {
+        content.style.display = "block";
+    }
+});
+

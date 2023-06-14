@@ -28,7 +28,7 @@
                     }
                     .content {
                         width: 80%;
-			height: 100vh;
+			height: 100%;
   			margin: 0 auto; /* This will center your div horizontally */
                         background-color: white;
                         padding: 20px;
