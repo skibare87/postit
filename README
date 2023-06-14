@@ -15,6 +15,7 @@ To use
 1. Either select upload for a file or paste your text file content into the editor. It will expand based on the number of lines.
 2. Add a filename if you are not uploading a file. .txt will be appended if not provided.
 3. Click the Save button
+*. For ChatGPT4 support, add you OPENAI_API_KEY as an env variable in docker compose
 
 To Edit
 1. Right click a file
