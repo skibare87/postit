@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import openai
+import tiktoken
 import os
 import glob
 
@@ -8,6 +9,9 @@ app = Flask(__name__)
 FILES_DIRECTORY = '/files/'
 txt_extensions = ['.txt', '.ps1', '.py','.sh']
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', '.ps1', '.py','.sh'}
+encoding = tiktoken.encoding_for_model("gpt-4")
+
+token_buffer=100
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -83,7 +87,7 @@ def chat():
     if context:
         context="You, referred to by text that starts AI:, and a human, referred to by test that starts with Human:, previously had this conversation: \n"+context+"\nYou do not need to prepend AI or Human to any answer, instead just answer the prompt directly.\n\n"
         prompt=context+prompt
-    return jsonify(chat_generate_text(prompt, model=model, system_prompt=system, max_tokens=4000))
+    return jsonify(chat_generate_text(prompt, model=model, system_prompt=system, max_tokens=8000))
 def chat_generate_text(
     prompt,
     model = "gpt-3.5-turbo",
@@ -101,12 +105,18 @@ def chat_generate_text(
         {"role": "user", "content": prompt},
     ]
     openai.api_key=os.environ.get("OPENAI_API_KEY")
+    avail_toks=max_tokens
+    # Count the number of tokens
+    num_tokens=len(encoding.encode(prompt))+token_buffer
+    avail_toks=avail_toks-num_tokens
 
+    if avail_toks<0:
+        return "The token context is greater than "+max_tokens+". Please reduce the context size or the question length"
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
         temperature=temperature,
-        max_tokens=max_tokens,
+        max_tokens=avail_toks,
         n=n,
         stop=stop,
         presence_penalty=presence_penalty,
